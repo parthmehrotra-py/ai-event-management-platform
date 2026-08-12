@@ -1,0 +1,2158 @@
+{
+  "name": "AI Event Management Platform",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "event-register",
+        "options": {}
+      },
+      "id": "f18bc909-7e6c-426c-81d1-a19cbe0caa18",
+      "name": "Webhook - Register",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [
+        -160,
+        -512
+      ],
+      "webhookId": "YOUR_WEBHOOK_ID"
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "YOUR_GOOGLE_SHEET_ID",
+          "mode": "list",
+          "cachedResultName": "EventPlatform_Master",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/YOUR_GOOGLE_SHEET_ID/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Participants",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/YOUR_GOOGLE_SHEET_ID/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "autoMapInputData",
+          "value": {},
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Name",
+              "displayName": "Name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Email",
+              "displayName": "Email",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Event",
+              "displayName": "Event",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "RegisteredAt",
+              "displayName": "RegisteredAt",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Attendance",
+              "displayName": "Attendance",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "id": "cea9650f-1c11-4f62-b9b9-954f50d4d6e9",
+      "name": "Append to Sheet",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4,
+      "position": [
+        192,
+        -512
+      ],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "9QaFyJvrbfPp2Uje",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sendTo": "sparrowlife2005@gmail.com",
+        "subject": "Registration Confirmed",
+        "message": "=Hi {{ $('Get name, email, event name').item.json.name }}, you're registered for {{ $('Get name, email, event name').item.json.event }}.",
+        "options": {}
+      },
+      "id": "312d44f7-1958-44da-8157-d0eaf47e1e40",
+      "name": "Send Confirmation",
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2,
+      "position": [
+        384,
+        -512
+      ],
+      "webhookId": "YOUR_WEBHOOK_ID",
+      "alwaysOutputData": true,
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "Msz7U4PYJkDZcGKE",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "id": "f2f112d1-32d5-4f80-a66f-0039bd2bf69f",
+      "name": "Execute Workflow Trigger",
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1,
+      "position": [
+        1168,
+        -608
+      ]
+    },
+    {
+      "parameters": {
+        "url": "=https://api.qrserver.com/v1/create-qr-code/?data={{$json.email}}|{{$json.event}}&size=200x200",
+        "options": {}
+      },
+      "id": "0c6cb853-54ea-48f6-a0bc-c6f49e044556",
+      "name": "Generate QR (goqr.me free)",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [
+        1360,
+        -608
+      ]
+    },
+    {
+      "parameters": {
+        "name": "={{$json.name}}_QR.png",
+        "driveId": {
+          "__rl": true,
+          "mode": "list",
+          "value": "My Drive"
+        },
+        "folderId": {
+          "__rl": true,
+          "mode": "list",
+          "value": "root",
+          "cachedResultName": "/ (Root folder)"
+        },
+        "options": {}
+      },
+      "id": "8cd55845-62b7-449c-8d06-3711ad82df20",
+      "name": "Upload to Drive",
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        1584,
+        -608
+      ],
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "oN5817dhmm5rw1Yn",
+          "name": "Google Drive account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sendTo": "=sparrowlife2005@gmail.com",
+        "subject": "Your Event QR Pass",
+        "message": "=Hi {{ $('Execute Workflow Trigger').item.json.name }},\n\nHere's your QR pass. {{ $('Execute Workflow Trigger').item.json.event }}.\n\nPlease show this QR code at the check-in desk.\n\nThank you!",
+        "options": {
+          "attachmentsUi": {
+            "attachmentsBinary": [
+              {}
+            ]
+          }
+        }
+      },
+      "id": "439abf72-7c31-42f9-85b2-d17e2c6032af",
+      "name": "Email QR Code",
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2,
+      "position": [
+        1952,
+        -608
+      ],
+      "webhookId": "YOUR_WEBHOOK_ID",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "Msz7U4PYJkDZcGKE",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "event-checkin",
+        "options": {}
+      },
+      "id": "7c060570-df55-4515-a64c-7243f4b5bf8d",
+      "name": "Webhook - Scan Attendance",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [
+        1136,
+        -128
+      ],
+      "webhookId": "YOUR_WEBHOOK_ID"
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "YOUR_GOOGLE_SHEET_ID",
+          "mode": "list",
+          "cachedResultName": "EventPlatform_Master",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/YOUR_GOOGLE_SHEET_ID/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Participants",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/YOUR_GOOGLE_SHEET_ID/edit#gid=0"
+        },
+        "filtersUI": {
+          "values": [
+            {
+              "lookupColumn": "email",
+              "lookupValue": "={{ $json.body.email }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "b58f3595-5881-4e2a-8a98-096d265e7581",
+      "name": "Lookup Participant",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4,
+      "position": [
+        1360,
+        -128
+      ],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "9QaFyJvrbfPp2Uje",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "string": [
+            {
+              "value1": "={{$json.email}}",
+              "operation": "isNotEmpty"
+            }
+          ],
+          "combinator": "and",
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 1
+          }
+        },
+        "options": {}
+      },
+      "id": "a59c55e3-c876-4839-a4aa-cd2c166c443f",
+      "name": "IF Valid",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        1568,
+        -128
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "YOUR_GOOGLE_SHEET_ID",
+          "mode": "list",
+          "cachedResultName": "EventPlatform_Master",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/YOUR_GOOGLE_SHEET_ID/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Participants",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/YOUR_GOOGLE_SHEET_ID/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "autoMapInputData",
+          "value": {},
+          "matchingColumns": [
+            "email"
+          ],
+          "schema": [
+            {
+              "id": "name",
+              "displayName": "name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "email",
+              "displayName": "email",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "event",
+              "displayName": "event",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "registeredAt",
+              "displayName": "registeredAt",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "attendance",
+              "displayName": "attendance",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "headers",
+              "displayName": "headers",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "params",
+              "displayName": "params",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "query",
+              "displayName": "query",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "body",
+              "displayName": "body",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "webhookUrl",
+              "displayName": "webhookUrl",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "executionMode",
+              "displayName": "executionMode",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "row_number",
+              "displayName": "row_number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "readOnly": true,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "id": "43843525-78d7-4285-95f5-0130814d2741",
+      "name": "Mark Attendance",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4,
+      "position": [
+        2016,
+        -176
+      ],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "9QaFyJvrbfPp2Uje",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "id": "11e53368-7706-4424-bc24-205afbd0aade",
+      "name": "Invalid Response",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [
+        2016,
+        -16
+      ]
+    },
+    {
+      "parameters": {
+        "content": "\n### Workflow Note\n\n**Registration & Confirmation Workflow**\n\n> Receives participant registration details through a webhook, extracts the **name, email, and event**, stores the registration in the **Participants Google Sheet**, sends a **registration confirmation email**, and then triggers the **QR Pass Generation workflow** to generate and deliver the participant’s event QR code.\n",
+        "height": 400,
+        "width": 1056,
+        "color": 4
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -272,
+        -704
+      ],
+      "id": "b0d64c6d-1efa-4f18-8554-f743a5e58aab",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "content": "### Workflow Note\n\n**QR Pass Generation & Email Workflow**\n\n> **Triggered automatically by the Registration & Confirmation Workflow.** Receives the registered participant’s details, generates a **unique QR code**, uploads the QR image to **Google Drive**, downloads the generated file, and sends the **QR Pass to the participant via email** for use at event check-in.\n",
+        "height": 384,
+        "width": 1172,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1040,
+        -816
+      ],
+      "id": "cfedf8a8-f70e-48f4-96a3-22625656714f",
+      "name": "Sticky Note1"
+    },
+    {
+      "parameters": {
+        "triggerTimes": {
+          "item": [
+            {
+              "hour": 8
+            }
+          ]
+        }
+      },
+      "id": "bbcb2c2d-9797-40c8-a040-567978b6b38f",
+      "name": "Cron - Daily 8AM",
+      "type": "n8n-nodes-base.cron",
+      "typeVersion": 1,
+      "position": [
+        1504,
+        384
+      ]
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "YOUR_GOOGLE_SHEET_ID",
+          "mode": "list",
+          "cachedResultName": "EventPlatform_Master",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/YOUR_GOOGLE_SHEET_ID/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Participants",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/YOUR_GOOGLE_SHEET_ID/edit#gid=0"
+        },
+        "options": {}
+      },
+      "id": "4096144c-9382-40f8-9445-6fcfe6825216",
+      "name": "Read Participants",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4,
+      "position": [
+        1728,
+        384
+      ],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "9QaFyJvrbfPp2Uje",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "dateTime": [
+            {
+              "value1": "={{$json.eventDate}}",
+              "value2": "={{$today.plus(1,'day')}}",
+              "operation": "equal"
+            }
+          ],
+          "combinator": "and",
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 1
+          }
+        },
+        "options": {}
+      },
+      "id": "580f2068-9f51-41e5-a326-4cb7b53f4ba1",
+      "name": "IF Event Tomorrow",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        1952,
+        384
+      ]
+    },
+    {
+      "parameters": {
+        "sendTo": "sparrowlife2005@gmail.com",
+        "subject": "Reminder: Event Tomorrow",
+        "message": "=Hi {{$json.name}}, reminder for {{$json.event}} tomorrow.",
+        "options": {}
+      },
+      "id": "a2b84166-6338-4437-8e7d-dd2a2f8c3fbd",
+      "name": "Send Reminder Email",
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2,
+      "position": [
+        2176,
+        384
+      ],
+      "webhookId": "YOUR_WEBHOOK_ID",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "Msz7U4PYJkDZcGKE",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "### Workflow Note\n\n**Automated Event Reminder Workflow**\n\n> **Triggered daily at 8:00 AM.** The workflow reads participant information from the **Participants Google Sheet**, checks whether the **event is scheduled for tomorrow**, and, if so, automatically sends a **reminder email** to registered participants. This ensures participants receive timely reminders before the event.\n",
+        "height": 368,
+        "width": 944,
+        "color": 7
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1456,
+        192
+      ],
+      "id": "ed42aab6-b879-4bec-9f68-2172a63aae9f",
+      "name": "Sticky Note2"
+    },
+    {
+      "parameters": {
+        "triggerTimes": {
+          "item": [
+            {
+              "hour": 18
+            }
+          ]
+        }
+      },
+      "id": "3d6a681c-32bc-4b2e-8f3b-33ac68aee5d7",
+      "name": "Cron - After Event End",
+      "type": "n8n-nodes-base.cron",
+      "typeVersion": 1,
+      "position": [
+        -272,
+        64
+      ]
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "YOUR_GOOGLE_SHEET_ID",
+          "mode": "list",
+          "cachedResultName": "EventPlatform_Master",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/YOUR_GOOGLE_SHEET_ID/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Participants",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/YOUR_GOOGLE_SHEET_ID/edit#gid=0"
+        },
+        "options": {}
+      },
+      "id": "cb0efeb8-9c35-4677-bf1b-99027993da61",
+      "name": "Read Attended Participants",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4,
+      "position": [
+        -48,
+        64
+      ],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "9QaFyJvrbfPp2Uje",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.pdfshift.io/v3/convert/pdf",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\"source\": \"<!DOCTYPE html><html><body style='font-family:Georgia,serif;text-align:center;background:#faf8f3;padding:0;margin:0;'><div style='border:1px solid #c9a24b;margin:24px;padding:70px 60px;position:relative;'><div style='position:absolute;top:14px;left:14px;right:14px;bottom:14px;border:1px solid #c9a24b;'></div><p style='letter-spacing:6px;color:#a8873e;font-size:12px;margin:0;'>CERTIFICATE OF PARTICIPATION</p><div style='width:36px;height:1px;background:#c9a24b;margin:24px auto;'></div><p style='font-size:14px;color:#777;margin:0 0 6px;font-style:italic;'>This certifies that</p><h1 style='font-size:40px;font-weight:400;margin:8px 0 20px;color:#1f1f1d;letter-spacing:1px;'>{{ $('Read Attended Participants').item.json.name }}</h1><p style='font-size:14px;color:#777;margin:0 0 6px;font-style:italic;'>has successfully participated in</p><h2 style='font-size:22px;font-weight:400;margin:8px 0 40px;color:#1f1f1d;'>{{ $('Read Attended Participants').item.json.event }}</h2><div style='width:36px;height:1px;background:#c9a24b;margin:24px auto 12px;'></div><p style='font-size:11px;color:#a8873e;letter-spacing:3px;margin:0;'>EVENT PLATFORM</p></div></body></html>\"}",
+        "options": {}
+      },
+      "id": "b2ada24f-6588-4f0e-8eb4-ab6dbbcdf07d",
+      "name": "Generate Certificate (HTML->PDF)",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [
+        176,
+        64
+      ],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "yRPgx3DtquoeoOWg",
+          "name": "Header Auth account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sendTo": "sparrowlife2005@gmail.com",
+        "subject": "Your Certificate of Participation",
+        "message": "=Hi {{ $('Read Attended Participants').item.json.name }}, congratulations on completing {{ $('Read Attended Participants').item.json.event }}! Your certificate is attached.",
+        "options": {
+          "attachmentsUi": {
+            "attachmentsBinary": [
+              {}
+            ]
+          }
+        }
+      },
+      "id": "bad9f277-cede-43f4-8708-55691bb0e3e8",
+      "name": "Email Certificate",
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2,
+      "position": [
+        832,
+        64
+      ],
+      "webhookId": "YOUR_WEBHOOK_ID",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "Msz7U4PYJkDZcGKE",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "### Workflow Note\n\n**Automated Certificate Generation & Delivery Workflow**\n\n> **Triggered automatically after the event ends.** The workflow reads the list of **attended participants** from the Google Sheet, generates personalized **PDF certificates**, uploads the certificates to **Google Drive**, downloads the generated files, and **emails the certificates to eligible participants**. This automates the complete post-event certificate distribution process.\n",
+        "height": 416,
+        "width": 1364,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -336,
+        -128
+      ],
+      "id": "46579fe3-2a32-4317-913b-2642f5b53998",
+      "name": "Sticky Note3"
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "event-feedback",
+        "options": {}
+      },
+      "id": "1fe731e3-06ee-48d4-a145-6c9108d58b59",
+      "name": "Webhook - Feedback Form",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [
+        -224,
+        704
+      ],
+      "webhookId": "YOUR_WEBHOOK_ID"
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "YOUR_GOOGLE_SHEET_ID",
+          "mode": "list",
+          "cachedResultName": "EventPlatform_Master",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/YOUR_GOOGLE_SHEET_ID/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1933623192,
+          "mode": "list",
+          "cachedResultName": "Feedback",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/YOUR_GOOGLE_SHEET_ID/edit#gid=1933623192"
+        },
+        "columns": {
+          "mappingMode": "autoMapInputData",
+          "value": {},
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "name",
+              "displayName": "name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "email",
+              "displayName": "email",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "event",
+              "displayName": "event",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "rating",
+              "displayName": "rating",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "comments",
+              "displayName": "comments",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "submittedAt",
+              "displayName": "submittedAt",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "id": "16fe516a-024e-4147-93e4-49415636ea3a",
+      "name": "Append Feedback",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4,
+      "position": [
+        224,
+        704
+      ],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "9QaFyJvrbfPp2Uje",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "appendOrUpdate",
+        "documentId": {
+          "__rl": true,
+          "value": "YOUR_GOOGLE_SHEET_ID",
+          "mode": "list",
+          "cachedResultName": "EventPlatform_Master",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/YOUR_GOOGLE_SHEET_ID/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 837688049,
+          "mode": "list",
+          "cachedResultName": "Analytics",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/YOUR_GOOGLE_SHEET_ID/edit#gid=837688049"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "event": "={{$json.event}}",
+            "totalRegistered": "={{$json.totalRegistered}}",
+            "totalAttended": "={{$json.totalAttended}}",
+            "avgRating": "={{$json.avgRating}}",
+            "sentimentSummary": "={{$json.sentimentSummary}}",
+            "updatedAt": "={{$json.updatedAt}}"
+          },
+          "matchingColumns": [
+            "event"
+          ],
+          "schema": [
+            {
+              "id": "event",
+              "displayName": "event",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "totalRegistered",
+              "displayName": "totalRegistered",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "totalAttended",
+              "displayName": "totalAttended",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "avgRating",
+              "displayName": "avgRating",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "sentimentSummary",
+              "displayName": "sentimentSummary",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "updatedAt",
+              "displayName": "updatedAt",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "name",
+              "displayName": "name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "email",
+              "displayName": "email",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "rating",
+              "displayName": "rating",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "comments",
+              "displayName": "comments",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "submittedAt",
+              "displayName": "submittedAt",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "id": "73c4c4da-a388-4dfa-b5e4-acdd307daad3",
+      "name": "Update Analytics Sheet",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4,
+      "position": [
+        1088,
+        704
+      ],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "9QaFyJvrbfPp2Uje",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "### Workflow Note\n\n**Automated Feedback Collection & Analytics Workflow**\n\n> **Triggered when a participant submits the feedback form.** The workflow extracts the submitted feedback, stores it in the **Feedback Google Sheet**, and performs **sentiment analysis using an AI model**. It then retrieves feedback and participant data, combines and compiles the information, and updates the **Analytics Sheet** with consolidated feedback insights. This enables automated **feedback analysis, sentiment tracking, and event performance analytics**.\n",
+        "height": 592,
+        "width": 1620,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -272,
+        512
+      ],
+      "id": "261c5869-12d3-4f4e-bb8a-37e5d6770cb6",
+      "name": "Sticky Note4"
+    },
+    {
+      "parameters": {
+        "triggerTimes": {
+          "item": [
+            {
+              "mode": "everyHour"
+            }
+          ]
+        }
+      },
+      "id": "fc9adb0a-867f-498c-b98e-f47a72647a10",
+      "name": "Cron - Every Hour",
+      "type": "n8n-nodes-base.cron",
+      "typeVersion": 1,
+      "position": [
+        2880,
+        -64
+      ]
+    },
+    {
+      "parameters": {
+        "content": "### Workflow Note\n\n**Automated Feedback Audit & Alert Workflow**\n\n> **Runs automatically every hour.** The workflow reads participant and feedback data from the **Google Sheets**, combines the records, and uses a **JavaScript validation step** to detect issues such as **duplicate email submissions and invalid ratings**. If an issue is detected, it automatically sends an **alert email** and records the audit results in the **AuditLog sheet**. This ensures continuous monitoring of feedback data quality and maintains an auditable record of detected issues.\n",
+        "height": 592,
+        "width": 1520,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        2816,
+        -416
+      ],
+      "id": "5ccb622f-bea4-453a-b37c-7fb94e88dba8",
+      "name": "Sticky Note5"
+    },
+    {
+      "parameters": {
+        "operation": "download",
+        "fileId": {
+          "__rl": true,
+          "value": "={{ $json.id }}",
+          "mode": "id"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        1760,
+        -608
+      ],
+      "id": "87ac0b61-fa41-45a3-96d6-55b7366b91a5",
+      "name": "Download file",
+      "alwaysOutputData": true,
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "oN5817dhmm5rw1Yn",
+          "name": "Google Drive account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "475ed516-370d-4c47-aa35-ad246dbf9735",
+              "name": "attendance",
+              "value": true,
+              "type": "boolean"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.5,
+      "position": [
+        1792,
+        -128
+      ],
+      "id": "d9ecfb22-fa56-4750-b54c-6fdffc597f91",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.groq.com/openai/v1/chat/completions",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\"model\": \"llama-3.1-8b-instant\", \"messages\": [{\"role\": \"user\", \"content\": \"Summarize sentiment in one line: {{ $json.comments }}\"}]}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.5,
+      "position": [
+        448,
+        704
+      ],
+      "id": "392aec7d-bb4b-4247-b66c-dcd0f2e22446",
+      "name": "Groq Sentiment Analysis",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "in0kyJPnDRz6swrQ",
+          "name": "Header Auth account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "YOUR_GOOGLE_SHEET_ID",
+          "mode": "list",
+          "cachedResultName": "EventPlatform_Master",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/YOUR_GOOGLE_SHEET_ID/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1933623192,
+          "mode": "list",
+          "cachedResultName": "Feedback",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/YOUR_GOOGLE_SHEET_ID/edit#gid=1933623192"
+        },
+        "filtersUI": {
+          "values": [
+            {
+              "lookupColumn": "event",
+              "lookupValue": "={{ $json.event }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        256,
+        960
+      ],
+      "id": "8e38d852-2bc2-408d-91d3-42f7fd65673a",
+      "name": "Get Feedback",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "9QaFyJvrbfPp2Uje",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "YOUR_GOOGLE_SHEET_ID",
+          "mode": "list",
+          "cachedResultName": "EventPlatform_Master",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/YOUR_GOOGLE_SHEET_ID/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Participants",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/YOUR_GOOGLE_SHEET_ID/edit#gid=0"
+        },
+        "filtersUI": {
+          "values": [
+            {
+              "lookupColumn": "event",
+              "lookupValue": "={{ $json.event }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        464,
+        960
+      ],
+      "id": "bac67f12-3fa1-49fd-883a-4479eae5ea9f",
+      "name": "Get Participants",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "9QaFyJvrbfPp2Uje",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        672,
+        704
+      ],
+      "id": "6be3feb4-4dc1-4223-a115-7e4404a53364",
+      "name": "Merge"
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "YOUR_GOOGLE_SHEET_ID",
+          "mode": "list",
+          "cachedResultName": "EventPlatform_Master",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/YOUR_GOOGLE_SHEET_ID/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1933623192,
+          "mode": "list",
+          "cachedResultName": "Feedback",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/YOUR_GOOGLE_SHEET_ID/edit#gid=1933623192"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        3216,
+        -192
+      ],
+      "id": "07e51640-6c15-4436-ba1b-2d7c86d0b666",
+      "name": "Read Feedback",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "9QaFyJvrbfPp2Uje",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        3392,
+        -80
+      ],
+      "id": "9c5bfdfc-6e20-4a43-b955-7bef016ce498",
+      "name": "Merge1"
+    },
+    {
+      "parameters": {
+        "jsCode": "const rows = $input.all();\n\nconst emails = new Set();\n\nlet duplicateEmails = [];\nlet duplicateFeedback = [];\nlet invalidRatings = [];\n\nfor (const item of rows) {\n\n    const email = item.json.email;\n\n    if (email) {\n        if (emails.has(email)) {\n            duplicateEmails.push(email);\n        } else {\n            emails.add(email);\n        }\n    }\n\n    if (item.json.rating !== undefined && item.json.rating !== \"\") {\n        const rating = Number(item.json.rating);\n\n        if (rating < 1 || rating > 5) {\n            invalidRatings.push(email);\n        }\n    }\n}\n\nconst issuesFound =\n    duplicateEmails.length > 0 ||\n    invalidRatings.length > 0;\n\nconst alertType = issuesFound\n    ? \"Issues Found\"\n    : \"No Issues\";\n\nconst details = issuesFound\n    ? `Duplicate Emails: ${\n        duplicateEmails.length ? duplicateEmails.join(\", \") : \"None\"\n      } | Invalid Ratings: ${\n        invalidRatings.length ? invalidRatings.join(\", \") : \"None\"\n      }`\n    : \"Audit completed successfully. No anomalies detected.\";\n\nreturn [{\n    json: {\n        issuesFound,\n        timestamp: new Date().toISOString(),\n        workflowName: \"Event Feedback Audit\",\n        alertType,\n        details,\n        duplicateEmails,\n        invalidRatings\n    }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        3552,
+        -80
+      ],
+      "id": "66e6ee6f-0e0e-4342-ad84-2388e9438b16",
+      "name": "Code in JavaScript1"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "3f89eacd-14fb-4a09-98c5-abe682daab7d",
+              "leftValue": "={{$json.issuesFound}}",
+              "rightValue": "={{ true }}",
+              "operator": {
+                "type": "boolean",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        3728,
+        -80
+      ],
+      "id": "c6729952-bc71-4ca3-a9d1-d029349f8c7d",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "sendTo": "sparrowlife2005@gmail.com",
+        "subject": "Audit Alert - Event Platform",
+        "emailType": "text",
+        "message": "=Workflow : {{$json.workflowName}}\n\nAlert Type : {{$json.alertType}}\n\nDetails :\n\n{{$json.details}}\n\nTimestamp :\n\n{{$json.timestamp}}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        3920,
+        -208
+      ],
+      "id": "154ea8f4-906f-4d5c-892b-a83bfaf89986",
+      "name": "Send a message",
+      "webhookId": "YOUR_WEBHOOK_ID",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "Msz7U4PYJkDZcGKE",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "YOUR_GOOGLE_SHEET_ID",
+          "mode": "list",
+          "cachedResultName": "EventPlatform_Master",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/YOUR_GOOGLE_SHEET_ID/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 2025465059,
+          "mode": "list",
+          "cachedResultName": "AuditLog",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/YOUR_GOOGLE_SHEET_ID/edit#gid=2025465059"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "timestamp": "={{$node[\"Code in JavaScript1\"].json.timestamp}}",
+            "workflowName": "={{$node[\"Code in JavaScript1\"].json.workflowName}}",
+            "alertType": "={{$node[\"Code in JavaScript1\"].json.alertType}}",
+            "details": "={{$node[\"Code in JavaScript1\"].json.details}}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "timestamp",
+              "displayName": "timestamp",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "workflowName",
+              "displayName": "workflowName",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "alertType",
+              "displayName": "alertType",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "details",
+              "displayName": "details",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        4128,
+        -64
+      ],
+      "id": "6512c4d5-b1a4-44f4-9392-b30508887cfa",
+      "name": "Append row in sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "9QaFyJvrbfPp2Uje",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "TU6i0wY7Q7wu0Hrg"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {},
+          "matchingColumns": [],
+          "schema": [],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": true
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.3,
+      "position": [
+        608,
+        -512
+      ],
+      "id": "96835080-a906-4186-869d-a711782b920a",
+      "name": "Execute 2nd Workflow"
+    },
+    {
+      "parameters": {
+        "keepOnlySet": true,
+        "values": {
+          "string": [
+            {
+              "name": "name",
+              "value": "={{ $json.body.name }}"
+            },
+            {
+              "name": "email",
+              "value": "={{ $json.body.email }}"
+            },
+            {
+              "name": "=event",
+              "value": "={{ $json.body.event }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "1b501c2f-0078-4b3f-aa5e-e7cd98590b91",
+      "name": "Get name, email, event name",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 2,
+      "position": [
+        16,
+        -512
+      ]
+    },
+    {
+      "parameters": {
+        "content": "### Workflow Note\n\n**Attendance Verification & Check-In Workflow**\n\n> Receives attendance scan details through a **webhook**, looks up the participant in the **Participants Google Sheet**, and validates their registration. If the participant is valid, it **marks their attendance in the sheet**; otherwise, it returns an **Invalid Participant response**. This ensures that only registered participants can be checked in to the event.\n",
+        "height": 464,
+        "width": 1216,
+        "color": 7
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1088,
+        -336
+      ],
+      "id": "dfd84975-b52d-44f9-a7f1-fc3f5a2ef737",
+      "name": "Sticky Note6"
+    },
+    {
+      "parameters": {
+        "name": "={{$json.name}}_Certificate.pdf",
+        "driveId": {
+          "__rl": true,
+          "mode": "list",
+          "value": "My Drive"
+        },
+        "folderId": {
+          "__rl": true,
+          "mode": "list",
+          "value": "root",
+          "cachedResultName": "/ (Root folder)"
+        },
+        "options": {}
+      },
+      "id": "9a6bdb47-767c-4964-b573-840b34e3e822",
+      "name": "Upload certificate",
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        400,
+        64
+      ],
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "oN5817dhmm5rw1Yn",
+          "name": "Google Drive account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "download",
+        "fileId": {
+          "__rl": true,
+          "value": "={{ $json.id }}",
+          "mode": "id"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        624,
+        64
+      ],
+      "id": "5fb0c3b9-5743-4a82-a2f9-31359df4a420",
+      "name": "Download Certificate",
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "oN5817dhmm5rw1Yn",
+          "name": "Google Drive account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "3193ab6f-1217-4d5f-ba6f-68b32c65b95e",
+              "name": "name",
+              "value": "={{ $json.body.name }}",
+              "type": "string"
+            },
+            {
+              "id": "ea9b6297-d7b6-43f1-992e-5764f535a1fc",
+              "name": "email",
+              "value": "={{ $json.body.email }}",
+              "type": "string"
+            },
+            {
+              "id": "3f95625c-d519-45e0-96fd-a39fa9f66748",
+              "name": "event",
+              "value": "={{ $json.body.event }}",
+              "type": "string"
+            },
+            {
+              "id": "1d83e2c6-4160-4783-b300-ba811c0f7d22",
+              "name": "rating",
+              "value": "={{ $json.body.rating }}",
+              "type": "string"
+            },
+            {
+              "id": "c473d49b-abc1-4729-909f-d2140a5a3bf3",
+              "name": "comments",
+              "value": "={{ $json.body.comments }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.5,
+      "position": [
+        0,
+        704
+      ],
+      "id": "45bd5da3-02fc-4895-8e43-cfb7ba8603e2",
+      "name": "Feedback extraction"
+    },
+    {
+      "parameters": {
+        "jsCode": "const participants = $('Get Participants').all();\nconst feedback = $('Get Feedback').all();\n\nconst totalRegistered = participants.length;\nconst totalAttended = participants.filter(p => p.json.attendance === true || p.json.attendance === 'true').length;\nconst avgRating = feedback.length \n  ? (feedback.reduce((sum, f) => sum + Number(f.json.rating), 0) / feedback.length).toFixed(1)\n  : 0;\n\nreturn [{ json: { totalRegistered, totalAttended, avgRating } }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        752,
+        960
+      ],
+      "id": "61f42814-b3aa-49b9-9385-eb708ab25a29",
+      "name": "Compile Data Items"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "e949f46d-7169-42dc-9f0a-593620c4e520",
+              "name": "event",
+              "value": "={{ $('Append Feedback').item.json.event }}",
+              "type": "string"
+            },
+            {
+              "id": "5e8a069a-026f-4f3c-9653-130a8ceb2c87",
+              "name": "sentimentSummary",
+              "value": "={{ $('Groq Sentiment Analysis').item.json.choices[0].message.content }}",
+              "type": "string"
+            },
+            {
+              "id": "3f6c9d78-1f3a-47dd-a17b-3e1110415728",
+              "name": "updatedAt",
+              "value": "={{ $now }}",
+              "type": "string"
+            },
+            {
+              "id": "1b7f9c9d-6e69-457b-bb4f-01e4989fe47e",
+              "name": "totalRegistered",
+              "value": "={{$json.totalRegistered}}",
+              "type": "string"
+            },
+            {
+              "id": "8a19ca14-77c2-4f58-93ba-d381f0a3b4d3",
+              "name": "totalAttended",
+              "value": "={{$json.totalAttended}}",
+              "type": "string"
+            },
+            {
+              "id": "b36a71fb-4beb-4529-b36e-5e8e12ba83b9",
+              "name": "avgRating",
+              "value": "={{$json.avgRating}}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.5,
+      "position": [
+        896,
+        704
+      ],
+      "id": "2f1a0c96-db19-4e42-8792-43423ec8fe51",
+      "name": "Collection of data for the Analytics Sheet"
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "YOUR_GOOGLE_SHEET_ID",
+          "mode": "list",
+          "cachedResultName": "EventPlatform_Master",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/YOUR_GOOGLE_SHEET_ID/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Participants",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/YOUR_GOOGLE_SHEET_ID/edit#gid=0"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        3040,
+        -64
+      ],
+      "id": "8a7b800b-4536-4259-99b9-18e24fc84390",
+      "name": "Read Participants2",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "9QaFyJvrbfPp2Uje",
+          "name": "Google Sheets account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Webhook - Register": {
+      "main": [
+        [
+          {
+            "node": "Get name, email, event name",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Append to Sheet": {
+      "main": [
+        [
+          {
+            "node": "Send Confirmation",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send Confirmation": {
+      "main": [
+        [
+          {
+            "node": "Execute 2nd Workflow",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Execute Workflow Trigger": {
+      "main": [
+        [
+          {
+            "node": "Generate QR (goqr.me free)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Generate QR (goqr.me free)": {
+      "main": [
+        [
+          {
+            "node": "Upload to Drive",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Upload to Drive": {
+      "main": [
+        [
+          {
+            "node": "Download file",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook - Scan Attendance": {
+      "main": [
+        [
+          {
+            "node": "Lookup Participant",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Lookup Participant": {
+      "main": [
+        [
+          {
+            "node": "IF Valid",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "IF Valid": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Invalid Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Cron - Daily 8AM": {
+      "main": [
+        [
+          {
+            "node": "Read Participants",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Read Participants": {
+      "main": [
+        [
+          {
+            "node": "IF Event Tomorrow",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "IF Event Tomorrow": {
+      "main": [
+        [
+          {
+            "node": "Send Reminder Email",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Cron - After Event End": {
+      "main": [
+        [
+          {
+            "node": "Read Attended Participants",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Read Attended Participants": {
+      "main": [
+        [
+          {
+            "node": "Generate Certificate (HTML->PDF)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Generate Certificate (HTML->PDF)": {
+      "main": [
+        [
+          {
+            "node": "Upload certificate",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook - Feedback Form": {
+      "main": [
+        [
+          {
+            "node": "Feedback extraction",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Append Feedback": {
+      "main": [
+        [
+          {
+            "node": "Groq Sentiment Analysis",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Get Feedback",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Cron - Every Hour": {
+      "main": [
+        [
+          {
+            "node": "Read Participants2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Download file": {
+      "main": [
+        [
+          {
+            "node": "Email QR Code",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "Mark Attendance",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Groq Sentiment Analysis": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Feedback": {
+      "main": [
+        [
+          {
+            "node": "Get Participants",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Participants": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Merge": {
+      "main": [
+        [
+          {
+            "node": "Compile Data Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Read Feedback": {
+      "main": [
+        [
+          {
+            "node": "Merge1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge1": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript1": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Send a message",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Append row in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send a message": {
+      "main": [
+        [
+          {
+            "node": "Append row in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get name, email, event name": {
+      "main": [
+        [
+          {
+            "node": "Append to Sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Upload certificate": {
+      "main": [
+        [
+          {
+            "node": "Download Certificate",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Download Certificate": {
+      "main": [
+        [
+          {
+            "node": "Email Certificate",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Feedback extraction": {
+      "main": [
+        [
+          {
+            "node": "Append Feedback",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Compile Data Items": {
+      "main": [
+        [
+          {
+            "node": "Collection of data for the Analytics Sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Collection of data for the Analytics Sheet": {
+      "main": [
+        [
+          {
+            "node": "Update Analytics Sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Read Participants2": {
+      "main": [
+        [
+          {
+            "node": "Read Feedback",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Merge1",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "95b27043-6364-4f13-a98e-98c6df71e68a",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "5738b34ccf643b546eabfa11b151548997a4038ed12db3b73a6788c491f08b4e"
+  },
+  "nodeGroups": [],
+  "id": "TU6i0wY7Q7wu0Hrg",
+  "tags": [
+    {
+      "updatedAt": "2026-08-07T17:53:31.750Z",
+      "createdAt": "2026-08-07T17:53:31.750Z",
+      "id": "lhfR3PF04X8AL5fL",
+      "name": "SS Capstone n8n"
+    }
+  ]
+}
